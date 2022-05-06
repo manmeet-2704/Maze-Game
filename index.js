@@ -14,17 +14,17 @@ function createBlankMaze() {
       var col = document.createElement("td");
       if (rowIndex == 1 && colIndex == 1) {
 
-        col.style.backgroundColor = "rgb(244,0,0)";
+        col.style.backgroundColor = "rgb(0,0,0)";
         col.setAttribute("type", "start");
 
       } else if (rowIndex == mazeHeight && colIndex == mazeWidth) {
 
-        col.style.backgroundColor = "rgb(0,244,0)";
+        col.style.backgroundColor = "rgb(0,255,0)";
         col.setAttribute("type", "finish");
 
       } else {
 
-        col.style.backgroundColor = "rgb(255,255,255)";
+        col.style.backgroundColor = "rgb(0,0,0)";
 
       }
       col.setAttribute("id", "cell_" + rowIndex + "_" + colIndex);

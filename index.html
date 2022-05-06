@@ -1,161 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <link rel="stylesheet" type="text/css" href="styles.css">
-  <script src="index.js"></script>     
+  <script src="index.js"></script>
 </head>
+
 <body>
+  <h1 class="heading">Maze Game</h1>
+  <div id="frm">
+    <input type="number" id="size" placeholder="Maze Size">
+    <br><br>
+    <button onclick="setMazeSize(document.getElementById('size').value)" style="cursor: pointer">GO</button>
+  </div>
+  <img src="images/runner.png" alt="" id="box" style="display: none">
+  <div id="gameOver" style="display: none">
+    <h1>You Win</h1>
+    <p id="steps"></p>
+    <button onclick="restart()">Play Again</button>
+  </div>
+  <script>
+    var mazeWidth = 20;
+    var mazeHeight;
+    var h;
+    let box = document.getElementById('box');
+    let left = 380;
+    let up = 170;
+    let row = 1,
+      col = 1;
+    let i = 1,
+      j = 1;
+    var ans = 0;
+    var minSteps = Number.MAX_VALUE;
+    let temp = 0;
+    var visited;
+    var path = "";
+    var minPath = "";
 
-<script>
+    function setMazeSize(size) {
+      mazeWidth = parseInt(size);
+      mazeHeight = mazeWidth;
+      h = 500 / mazeWidth;
+      box.style.height = h + "px";
+      box.style.width = h + "px";
+      visited = new Array(mazeWidth);
+      let form = document.getElementById('frm');
+      form.style.display = "none";
+      document.querySelector('img').style.display = "block";
+      document.querySelector('#soln').style.display = "flex";
+      init();
+      creatematrix();
+      solve(mazeWidth, 1, 1, temp, path);
+    }
 
-var mazeWidth = 50;
-var mazeHeight = mazeWidth;
+    function creatematrix() {
+      for (var k = 0; k < visited.length; k++) visited[k] = new Array(mazeWidth).fill(1);
+    }
 
-window.addEventListener("load", init);
+    function init() {
 
-function init() {
+      createBlankMaze();
 
-    createBlankMaze();
+      paint();
 
-    paint();
+    }
+    
 
-}
+    function paint() {
 
-function paint() {
+      var player;
+      var startAtRow = 1;
+      var startAtCol = 1;
 
-  var player;
-	var startAtRow = 1;
-	var startAtCol = 1;
+      var currentCell;
+      addRoute(startAtRow, startAtCol, false, "rgb(0, 0, 0)");
 
-	var currentCell;
-	
-    addRoute(startAtRow, startAtCol, false, "rgb(0, 0, 0)");
-
-    for (n = 1; n < (mazeWidth * mazeHeight) - 1; n++) {
+      for (n = 1; n < (mazeWidth * mazeHeight) - 1; n++) {
 
         var currentCell = document.getElementById("cell_" + startAtRow + "_" + startAtCol);
-        
+
         if (currentCell.getAttribute("occupied") == "true") {
 
-            addRoute(startAtRow, startAtCol, true, "rgb(0,0, 0)");
+          addRoute(startAtRow, startAtCol, true, "rgb(0,0, 0)");
 
         }
 
         if (startAtCol == mazeWidth) {
-            
-            startAtRow++;
-            startAtCol = 1;
+
+          startAtRow++;
+          startAtCol = 1;
 
         } else {
 
-            startAtCol++;
+          startAtCol++;
 
         }
 
+      }
+
     }
 
-}
+    function addRoute(startAtRow, startAtCol, createDetour, backgroundColorRoute) {
 
-function addRoute(startAtRow, startAtCol, createDetour, backgroundColorRoute) {
+      var validExits = ["right", "bottom", "left", "top"];
 
-    var validExits = ["right", "bottom", "left", "top"];
-	
-    var remainingExits = {"right": mazeWidth, "bottom": mazeHeight, "left": 0, "top": 0};
-	
-    var nextExits = [];
-    
-	var lastCells= [];
+      var remainingExits = {
+        "right": mazeWidth,
+        "bottom": mazeHeight,
+        "left": 0,
+        "top": 0
+      };
 
-    var rowIndex = startAtRow;
-    
-	var colIndex = startAtCol;
-    
-    var currentCell = document.getElementById("cell_" + rowIndex + "_" + colIndex);
+      var nextExits = [];
 
-    var exit;
+      var lastCells = [];
 
-    var lastExit;
+      var rowIndex = startAtRow;
 
-    var exitIndex;
+      var colIndex = startAtCol;
 
-    var loop = 0;
+      var currentCell = document.getElementById("cell_" + rowIndex + "_" + colIndex);
 
-    var loopFuse = 0;
+      var exit;
 
-    var maxLoops = 3 * mazeWidth * mazeHeight;
+      var lastExit;
 
-    var nextPossibleCell;
+      var exitIndex;
 
-    while (loop < ((mazeWidth * mazeHeight) - 1)) {
+      var loop = 0;
+
+      var loopFuse = 0;
+
+      var maxLoops = 3 * mazeWidth * mazeHeight;
+
+      var nextPossibleCell;
+
+      while (loop < ((mazeWidth * mazeHeight) - 1)) {
 
         loopFuse++;
 
-        if (loopFuse >= maxLoops) {break;}
+        if (loopFuse >= maxLoops) {
+          break;
+        }
 
         nextExits = [];
 
         for (i = 0; i < validExits.length; i++) {
 
-            switch(validExits[i]) {
+          switch (validExits[i]) {
 
-                case "right":
-                    nextPossibleCell = document.getElementById("cell_" + rowIndex + "_" + (colIndex + 1));
-                    break;
+            case "right":
+              nextPossibleCell = document.getElementById("cell_" + rowIndex + "_" + (colIndex + 1));
+              break;
 
-                case "left":
-                    nextPossibleCell = document.getElementById("cell_" + rowIndex + "_" + (colIndex - 1));
-                    break;
+            case "left":
+              nextPossibleCell = document.getElementById("cell_" + rowIndex + "_" + (colIndex - 1));
+              break;
 
-                case "bottom":
-                    nextPossibleCell = document.getElementById("cell_" + (rowIndex + 1) + "_" + colIndex);
-                    break;
+            case "bottom":
+              nextPossibleCell = document.getElementById("cell_" + (rowIndex + 1) + "_" + colIndex);
+              break;
 
-                case "top":
-                    nextPossibleCell = document.getElementById("cell_" + (rowIndex - 1) + "_" + colIndex);
-                    break;
+            case "top":
+              nextPossibleCell = document.getElementById("cell_" + (rowIndex - 1) + "_" + colIndex);
+              break;
+
+          }
+
+          if (nextPossibleCell != null) {
+
+            if (nextPossibleCell.getAttribute("occupied") != "true") {
+
+              for (t = 0; t < remainingExits[validExits[i]]; t++) {
+
+                nextExits.push(validExits[i]);
+
+              }
 
             }
-            
-            if (nextPossibleCell != null) {
 
-                if (nextPossibleCell.getAttribute("occupied") != "true") {
-                    
-                    for (t = 0; t < remainingExits[validExits[i]]; t++) {
-
-                        nextExits.push(validExits[i]);
-
-                    }
-
-                }
-
-            } 
+          }
 
         }
 
         if (nextExits.length == 0) {
 
-            if (createDetour == true) {
+          if (createDetour == true) {
 
-                return false;
+            return false;
 
 
-            } else {
-                
-                lastCells.splice(lastCells.length - 1, 1);
+          } else {
 
-                rowIndex = lastCells[lastCells.length - 1][0];
-                colIndex = lastCells[lastCells.length - 1][1];
-                currentCell = document.getElementById("cell_" + rowIndex + "_" + colIndex);
+            lastCells.splice(lastCells.length - 1, 1);
+            rowIndex = lastCells[lastCells.length - 1][0];
+            colIndex = lastCells[lastCells.length - 1][1];
+            currentCell = document.getElementById("cell_" + rowIndex + "_" + colIndex);
 
-                continue;
-            
-            }
+            continue;
 
-        } 
+          }
+
+        }
 
         exitIndex = Math.floor(Math.random() * Math.floor(nextExits.length));
 
@@ -163,103 +213,193 @@ function addRoute(startAtRow, startAtCol, createDetour, backgroundColorRoute) {
 
         if (createDetour == false) {
 
-            currentCell.style["border-"+exit] = "none";
+          currentCell.style["border-" + exit] = "none";
 
         } else {
 
-            if (!(exit == "right" && colIndex == mazeWidth - 1 && rowIndex == mazeHeight) &&
-                !(exit == "bottom" && colIndex == mazeWidth && rowIndex == mazeHeight - 1) ) {
+          if (!(exit == "right" && colIndex == mazeWidth - 1 && rowIndex == mazeHeight) &&
+            !(exit == "bottom" && colIndex == mazeWidth && rowIndex == mazeHeight - 1)) {
 
-                currentCell.style["border-"+exit] = "none";
+            currentCell.style["border-" + exit] = "none";
 
-            }
+          }
         }
-        
-        switch(exit) {
 
-            case "right":
+        switch (exit) {
 
-                colIndex = colIndex + 1;
-                remainingExits.left++;
-                remainingExits.right--;
-                break;
+          case "right":
 
-            case "bottom":
+            colIndex = colIndex + 1;
+            remainingExits.left++;
+            remainingExits.right--;
+            break;
 
-                rowIndex = rowIndex + 1;
-                remainingExits.top++;
-                remainingExits.bottom--;
-                break;
+          case "bottom":
 
-            case "left":
+            rowIndex = rowIndex + 1;
+            remainingExits.top++;
+            remainingExits.bottom--;
+            break;
 
-                colIndex = colIndex - 1;
-                remainingExits.left--;
-                remainingExits.right++;
-                break;
+          case "left":
 
-            case "top":
+            colIndex = colIndex - 1;
+            remainingExits.left--;
+            remainingExits.right++;
+            break;
 
-                rowIndex = rowIndex - 1;
-                remainingExits.top--;
-                remainingExits.bottom++;
-                break;
-                
+          case "top":
+
+            rowIndex = rowIndex - 1;
+            remainingExits.top--;
+            remainingExits.bottom++;
+            break;
+
         }
 
         lastCells.push([rowIndex, colIndex]);
 
         currentCell = document.getElementById("cell_" + rowIndex + "_" + colIndex);
 
-        switch(exit) {
+        switch (exit) {
 
-            case "right":
+          case "right":
 
-                currentCell.style["border-left"] = "none";
-                break;
+            currentCell.style["border-left"] = "none";
+            break;
 
-            case "bottom":
+          case "bottom":
 
-                currentCell.style["border-top"] = "none";
-                break;
+            currentCell.style["border-top"] = "none";
+            break;
 
-            case "left":
+          case "left":
 
-                currentCell.style["border-right"] = "none";
-                break;
+            currentCell.style["border-right"] = "none";
+            break;
 
-            case "top":
+          case "top":
 
-                currentCell.style["border-bottom"] = "none";
-                break;
+            currentCell.style["border-bottom"] = "none";
+            break;
 
         }
 
         if (rowIndex == mazeHeight && colIndex == mazeWidth) {
 
-            break;
+          break;
 
         }
-
-        currentCell.style.backgroundColor = backgroundColorRoute;
         currentCell.setAttribute("occupied", "true");
 
         lastExit = exit;
 
         loop++;
-
-        // player=document.getElementById("cell_0_0");
-        // player.style.backgroundColor='red';
-        // document.addEventListener('keydown',(event.keycode)=>{
-
-        // })
+      }
     }
 
-  }
-</script>
-<div id="maze_container" style="overflow-wrap: break-word; line-height: 14px; letter-spacing: -2px;"></div>
-<div id="player"></div>
+    function solve(n, i, j, temp, path) {
+      if (i == n && j == n) {
+        if (temp < minSteps) {
+          minSteps = temp;
+          minPath = path;
+        }
+        return;
+      }
+      let cell = document.getElementById("cell_" + i + "_" + j);
+      if (i < n && j < n) {
+        if (visited[i - 1][j - 1] == 0) return;
+        visited[i - 1][j - 1] = 0;
+        if (cell.style.borderTop != "" && i > 1) {
+          solve(n, i - 1, j, temp + 1, path + 'u')
+        }
+        if (cell.style.borderBottom != "" && i < n) solve(n, i + 1, j, temp + 1, path + 'd');
+        if (cell.style.borderLeft != "" && j > 1) solve(n, i, j - 1, temp + 1, path + 'l');
+        if (cell.style.borderRight != "" && j < n) solve(n, i, j + 1, temp + 1, path + 'r');
+        visited[i - 1][j - 1] = 1;
+      } else if (i == n) {
+        if (visited[i - 1][j - 1] == 0) return;
+        visited[i - 1][j - 1] = 0;
+        if (cell.style.borderRight != "")
+          solve(n, i, j + 1, temp + 1, path + 'r');
+        if (cell.style.borderTop != "")
+          solve(n, i - 1, j, temp + 1, path + 'u');
+        visited[i - 1][j - 1] = 1;
+      } else if (j == n) {
+        if (visited[i - 1][j - 1] == 0) return;
+        visited[i - 1][j - 1] = 0;
+        if (cell.style.borderLeft != "")
+          solve(n, i, j - 1, temp + 1, path + 'l');
+        if (cell.style.borderBottom != "")
+          solve(n, i + 1, j, temp + 1, path + 'd');
+        visited[i - 1][j - 1] = 1;
+
+      }
+    }
+
+    function visualize() {
+      let row = 1,
+        col = 1,
+        path = minPath;
+      for (var i = 0; i < path.length; i++) {
+        let cell = document.getElementById("cell_" + row + "_" + col);
+        cell.innerHTML = path[i];
+        cell.style.backgroundColor = "red";
+        if (path[i] == 'r') {
+          col++;
+        } else if (path[i] == 'l') col--;
+        else if (path[i] == 'd') row++;
+        else row--;
+      }
+    }
+    document.addEventListener("keydown", event => {
+      let currentCell = document.getElementById("cell_" + row + "_" + col);
+      if (event.keyCode == 39) {
+        if (currentCell.style.borderRight != "") {
+          left += h;
+          box.style.left = left + "px";
+          col++;
+          ans++;
+        }
+      } else if (event.keyCode == 37) {
+        if (currentCell.style.borderLeftWidth != "") {
+          left -= h;
+          box.style.left = left + "px";
+          col--;
+          ans++;
+        }
+      } else if (event.keyCode == 38) {
+        if (currentCell.style.borderTop != "") {
+          up -= h;
+          box.style.top = up + "px";
+          row--;
+          ans++;
+        }
+      } else if (event.keyCode == 40) {
+        if (currentCell.style.borderBottom != "") {
+          up += h;
+          box.style.top = up + "px";
+          row++;
+          ans++;
+        }
+      }
+      if (row == mazeWidth && col == mazeWidth) {
+        document.getElementById('maze_container').style.display = "none";
+        document.getElementById("box").style.display = "none";
+        document.getElementById("soln").style.display = "none";
+        document.getElementById("gameOver").style.display = "flex";
+        document.getElementById("steps").innerHTML = "Your Steps are: " + ans;
+
+      }
+    })
+
+    function restart() {
+      location.reload();
+    }
+  </script>
+  <div id="maze_container" style="overflow-wrap: break-word; line-height: 14px; letter-spacing: -2px;"></div><br>
+  <div id="soln"><button onclick="visualize()">View Solution</button></div>
 </html>
 </body>
-</html>
 
+</html>
